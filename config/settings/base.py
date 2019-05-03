@@ -11,8 +11,24 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import json
 
 from django.core.exceptions import ImproperlyConfigured
+
+
+with open('secrets.json') as f:
+    secrets = json.loads(f.read())
+
+
+# Function used when you cannot use environment variables
+# happens when using Apache to serve HTTP, sometimes Nginx-based environments where
+# operations wants to do things in a certain way
+def get_secret(setting, env=secrets):
+    try:
+        return env[setting]
+    except KeyError:
+        error_msg = 'Set the {0} environment variable'.format(setting)
+        raise ImproperlyConfigured(error_msg)
 
 
 # Function to handle environment variables errors - checks if it exists or not
