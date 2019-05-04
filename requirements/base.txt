@@ -1,0 +1,6 @@
+Django==2.2  # https://www.djangoproject.com/
+djangorestframework==3.9.2  # https://github.com/encode/django-rest-framework
+pytz==2018.9  # https://github.com/stub42/pytz
+sqlparse==0.3.0  # https://sqlparse.readthedocs.io/en/latest/
+virtualenv==16.4.3
+virtualenvwrapper-win==1.2.5
