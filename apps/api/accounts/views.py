@@ -31,3 +31,23 @@ class Register(APIView):
                 new_user.email = email
 
                 # Setting/checking for additional params
+                try:
+                    new_user.firstname = data['firstname'] if data['firstname'] is not None else
+                except KeyError:
+                    print("Error checking first name")
+                try:
+                    new_user.lastname = data['lastname'] if data['lastname'] is not None else
+                except KeyError:
+                    print("Error checking last name")
+
+                new_user.save()
+
+                return Response({"status": "Success"}, status=status.HTTP_201_CREATED)
+
+            else:
+                return Response({"error": "Required field(s) needed. Please try again."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            print("Unexpected error occurred: " + str(e))
+            return Response({"error": "Unexpected error occurred, please notify admin."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
