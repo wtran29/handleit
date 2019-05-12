@@ -16,7 +16,7 @@ import json
 from django.core.exceptions import ImproperlyConfigured
 
 
-with open('./handleit/secrets.json') as f:
+with open('../secrets.json') as f:
     secrets = json.loads(f.read())
 
 
@@ -57,6 +57,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'apps.accounts',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -93,6 +94,12 @@ TEMPLATES = [
         },
     },
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAdminUser',
+    )
+}
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
