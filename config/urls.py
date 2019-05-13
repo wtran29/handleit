@@ -20,5 +20,5 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('hello_world', views.HelloWorld.as_view()),
-    path('api/accounts/', include('apps.api.urls', namespace="users-api"))
+    path('api/accounts/', include('apps.api.accounts.urls', namespace="users-api"))
 ]
