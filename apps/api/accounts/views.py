@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.core.validators import validate_email
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
+from . import utils
 
 
 # Could have import CreateAPIView from rest_framework.generics
@@ -95,4 +96,14 @@ class Login(APIView):
     permission_classes = (IsAuthenticated,)
 
     def post(self, request):
-        return Response("Authentication Successful")
+        # Generating token
+        access_token, refresh_token = utils.generate_tokens(request.user)
+        if access_token is None or refresh_token is None:
+            return Response({"error": "Token generation unsuccessful!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response = {
+            'access_token': access_token,
+            'expires_in': 3600,
+            'token_type': "bearer",
+            'refresh_token': refresh_token
+        }
+        return Response(response)
