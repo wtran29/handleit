@@ -10,6 +10,7 @@ from django.core.validators import validate_email
 from django.contrib.auth.hashers import make_password
 from django.conf import settings
 from . import utils
+import jwt
 
 
 # Could have import CreateAPIView from rest_framework.generics
@@ -107,3 +108,59 @@ class Login(APIView):
             'refresh_token': refresh_token
         }
         return Response(response)
+
+
+class LoginRefresh(APIView):
+    def post(self, request):
+        try:
+            data = request.data
+            try:
+                refresh_token = data['refresh_token']
+            except KeyError:
+                return Response({"error": "Refresh token needed!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Validate refresh token
+            try:
+                decoded_refresh_token_payload = jwt.decode(refresh_token, settings.SECRET_KEY, algorithms='HS256')
+            except jwt.exceptions.InvalidSignatureError:
+                return Response({"error": "Invalid Signature, token compromised."}, status=status.HTTP_400_BAD_REQUEST)
+            except jwt.exceptions.ExpiredSignatureError:
+                return Response({"error": "Token expired."}, status=status.HTTP_400_BAD_REQUEST)
+            except (jwt.exceptions.InvalidTokenError, jwt.exceptions.DecodeError):
+                return Response({"error": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                if not (decoded_refresh_token_payload['type'] == "refresh"):
+                    return Response({"error": "Invalid token type"}, status=status.HTTP_400_BAD_REQUEST)
+
+                username = decoded_refresh_token_payload['username']
+            except KeyError:
+                return Response({"error": "Token compromised!"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Getting user object from database
+            try:
+                current_user = User.objects.get(username=username)
+            except User.DoesNotExist:
+                return Response({"error": "User does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+            except User.MultipleObjectsReturned:
+                return Response({"error": "Multiple users with same username exists!"})
+
+            # Generating tokens
+            access_token, refresh_token = utils.generate_tokens(current_user)
+
+            if access_token is None or refresh_token is None:
+                return Response({"error": "Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+            response = {
+                'access_token': access_token,
+                'expires_in': 3600,
+                'token_type': "bearer",
+                'refresh_token': refresh_token
+            }
+
+            return Response(response)
+
+        except Exception as e:
+            print(e)
+            return Response("Error handling your request", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
