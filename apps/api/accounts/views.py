@@ -15,7 +15,7 @@ import jwt
 
 # Could have import CreateAPIView from rest_framework.generics
 class Register(APIView):
-    def post(self, request, *args, **kwargs):
+    def post(self, request):
         required_fields = ['username', 'password', 'email']
         try:
             data = request.data

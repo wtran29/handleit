@@ -14,9 +14,9 @@ import os
 import json
 
 from django.core.exceptions import ImproperlyConfigured
+from os.path import abspath, dirname, join
 
-
-with open('./handleit/secrets.json') as f:
+with open('./secrets.json') as f:
     secrets = json.loads(f.read())
 
 
@@ -42,9 +42,18 @@ def get_env_variable(var_name):
 
 SECRET_KEY = get_secret('DJANGO_SECRET_KEY')
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+def root(*dirs):
+    base_dir = join(dirname(__file__), '..', '..')
+    return abspath(join(base_dir, *dirs))
+
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = root()
+MEDIA_ROOT = root('media')
+STATIC_ROOT = root('static_root')
+STATICFILES_DIRS = [root('static')]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -60,6 +69,8 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'apps.accounts',
+    'apps.core',
+    'apps.tasks',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -84,7 +95,7 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [root('templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
