@@ -11,6 +11,7 @@ class TaskTokenAuth(authentication.BaseAuthentication):
 
         # Getting token from request header
         auth = request.META.get('HTTP_AUTHORIZATION', b'')
+        print(auth)
         if isinstance(auth, text_type):
             # Work around django test client oddness
             auth = auth.encode(HTTP_HEADER_ENCODING)
