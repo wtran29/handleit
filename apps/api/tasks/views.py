@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ObjectDoesNotExist
 
 import jwt
 from tasks.authentication import TaskTokenAuth
@@ -177,6 +178,69 @@ class TaskAdd(APIView):
             res_dict['data'] = None
             res = Response(res_dict)
             res.status_code = 400
+
+        return res
+
+
+class TaskShow(APIView):
+    authentication_classes = (TaskTokenAuth, )
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request):
+        res_dict = {
+            'status': None,
+            'message': None,
+            'data': None
+        }
+
+        try:
+            list_id = request.GET.get('list_id', None)
+
+            # Check if list id is provided
+            if list_id is None or list_id == '':
+                raise ValueError("Invalid list_id")
+
+            # Get list obj
+            try:
+                task_list_obj = TaskList.objects.get(id=list_id)
+            except ObjectDoesNotExist:
+                raise ValueError("Invalid list_id")
+
+            # Check if user has permission for list
+            try:
+                list_perm_qs = ListAccess.objects.get(user=request.user, list=task_list_obj)
+            except ObjectDoesNotExist:
+                raise PermissionError("You do not have permission to this list.")
+
+            # Get tasks
+            tasks = Task.objects.filter(list=task_list_obj).values()
+
+            res_dict['status'] = 'success'
+            res_dict['message'] = 'Retrieved tasks successfully'
+            res_dict['data'] = tasks
+            res = Response(res_dict)
+            res.status_code = 200
+
+        except PermissionError as perm_err:
+            res_dict['status'] = 'failed'
+            res_dict['message'] = 'Permission denied. Error: ' + perm_err.__str__()
+            res_dict['data'] = None
+            res = Response(res_dict)
+            res.status_code = 403
+
+        except ValueError as val_err:
+            res_dict['status'] = 'failed'
+            res_dict['message'] = val_err.__str__()
+            res_dict['data'] = None
+            res = Response(res_dict)
+            res.status_code = 400
+
+        except Exception as e:
+            res_dict['status'] = 'failed'
+            res_dict['message'] = 'Something went wrong, Error: ' + e.__str__()
+            res_dict['data'] = None
+            res = Response(res_dict)
+            res.status_code = 500
 
         return res
 
