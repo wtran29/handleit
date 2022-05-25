@@ -4,4 +4,4 @@ pytz==2018.9  # https://github.com/stub42/pytz
 sqlparse==0.3.0  # https://sqlparse.readthedocs.io/en/latest/
 virtualenv==16.4.3
 virtualenvwrapper-win==1.2.5
-pyjwt==1.7.1
+pyjwt==2.4.0
